@@ -17,8 +17,11 @@ public class SkyblockScoreboard {
     private static final String OBJECTIVE_NAME = "SB_Sidebar";
 
     public static void initPlayer(ServerPlayerEntity player) {
-        // Initial setup handled in update loop for simplicity in this prototype, 
-        // but typically you set the objective once here.
+        // Force a clear on join to ensure clean state
+        Scoreboard scoreboard = player.getScoreboard();
+        if (scoreboard.getObjective(OBJECTIVE_NAME) != null) {
+            scoreboard.removeObjective(scoreboard.getObjective(OBJECTIVE_NAME));
+        }
         updateScoreboard(player);
     }
 
@@ -26,6 +29,7 @@ public class SkyblockScoreboard {
         Scoreboard scoreboard = player.getScoreboard();
         ScoreboardObjective objective = scoreboard.getObjective(OBJECTIVE_NAME);
 
+        // Create if missing
         if (objective == null) {
             objective = scoreboard.addObjective(
                     OBJECTIVE_NAME,
@@ -33,35 +37,36 @@ public class SkyblockScoreboard {
                     Text.literal("SKYBLOCK").formatted(Formatting.YELLOW, Formatting.BOLD),
                     ScoreboardCriterion.RenderType.INTEGER
             );
+            scoreboard.setObjectiveSlot(1, objective); // Slot 1 = Sidebar
         }
         
-        // Ensure it's displayed in the sidebar (slot 1)
-        scoreboard.setObjectiveSlot(1, objective);
-
-        // Clear old scores (naive approach for prototype - better to update existing scores using team prefix/suffix for flicker-free experience)
-        // For this foundation, we will just set scores directly. 
-        // Note: In a real advanced mod, use Packets or Team Suffixes to prevent flickering.
-        
-        // Using a simple method to just push lines. 
-        // 15 lines max.
-        
+        // Data Calculation
         String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MM/dd/yy"));
         double coins = CurrencyManager.getBalance(player);
-        
-        setScore(scoreboard, objective, "§7" + dateStr + " §8m120D", 10);
-        setScore(scoreboard, objective, "§1", 9); // Blank
-        setScore(scoreboard, objective, "§fRank: §aDefault", 8);
-        setScore(scoreboard, objective, "§2", 7); // Blank
-        setScore(scoreboard, objective, "§fCoins: §6" + (int)coins, 6);
-        setScore(scoreboard, objective, "§3", 5); // Blank
-        setScore(scoreboard, objective, "§fLocation:", 4);
-        setScore(scoreboard, objective, "§7Hub", 3); // Placeholder
-        setScore(scoreboard, objective, "§4", 2); // Blank
-        setScore(scoreboard, objective, "§ehyperion.net", 1);
+        String coinsFormatted = String.format("%.1f", coins); // Clean number format
+
+        // --- SET SCORES ---
+        // We use specific scores (15 down to 1) to keep order.
+        // To prevent flickering, usually we use Teams, but for Sandbox 
+        // we will just overwrite. The flicker comes from removing the objective.
+        // DO NOT remove the objective here. Just set scores.
+
+        setLine(scoreboard, objective, "§7" + dateStr + " §8m120D", 12);
+        setLine(scoreboard, objective, "§1", 11); // Spacer
+        setLine(scoreboard, objective, "§fRank: §aDefault", 10); // Dynamic Rank later
+        setLine(scoreboard, objective, "§2", 9); // Spacer
+        setLine(scoreboard, objective, "§fCoins: §6" + coinsFormatted, 8);
+        setLine(scoreboard, objective, "§3", 7); // Spacer
+        setLine(scoreboard, objective, "§fLocation:", 6);
+        setLine(scoreboard, objective, "§7High Level", 5);
+        setLine(scoreboard, objective, "§4", 4); // Spacer
+        setLine(scoreboard, objective, "§ehyperion.net", 3);
     }
     
-    private static void setScore(Scoreboard sb, ScoreboardObjective obj, String text, int scoreVal) {
-        ScoreboardPlayerScore score = sb.getPlayerScore(text, obj);
-        score.setScore(scoreVal);
+    private static void setLine(Scoreboard sb, ScoreboardObjective obj, String text, int score) {
+        // In vanilla 1.20, duplicate scores override. 
+        // Ideally, we clean up old scores, but for this simpler setup:
+        ScoreboardPlayerScore playerScore = sb.getPlayerScore(text, obj);
+        playerScore.setScore(score);
     }
 }
