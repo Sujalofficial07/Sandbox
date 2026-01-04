@@ -2,8 +2,7 @@ package com.sujal.skyblocksandbox.mixin;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.util.Identifier;
-import net.minecraft.entity.player.PlayerEntity 
+import net.minecraft.entity.player.PlayerEntity; // Fixed: Added semicolon here
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,10 +23,9 @@ public class InGameHudMixin {
         ci.cancel();
     }
     
-    // Cancel Experience Bar (Optional, Skyblock uses full screen xp bar usually, but let's hide to be clean)
-    // You can remove this if you want the vanilla XP bar for skill progression
+    // Cancel Experience Bar (Optional)
     @Inject(method = "renderExperienceBar", at = @At("HEAD"), cancellable = true)
     public void onRenderExperienceBar(DrawContext context, int x, CallbackInfo ci) {
-        // ci.cancel(); // Uncomment to hide XP bar
+        // ci.cancel(); // Uncomment this line if you want to hide the XP bar too
     }
 }
