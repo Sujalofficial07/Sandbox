@@ -3,6 +3,7 @@ package com.sujal.skyblocksandbox.item;
 import com.sujal.skyblocksandbox.stats.StatType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -12,110 +13,93 @@ import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class SBItemFactory {
 
     /**
-     * Creates a custom Skyblock Item with Stats and Lore.
-     * @param material Vanilla Item (e.g., Items.DIAMOND_SWORD)
-     * @param name Display Name
-     * @param rarity Item Rarity
-     * @param stats Map of Stats (Damage, Strength, etc.)
-     * @return Completed ItemStack
+     * Core Factory Method
      */
-    public static ItemStack create(Item material, String name, Rarity rarity, Map<StatType, Double> stats) {
+    public static ItemStack create(String skyblockId, Item material, String name, Rarity rarity, Map<StatType, Double> stats) {
         ItemStack stack = new ItemStack(material);
 
-        // 1. Set Name
+        // 1. Display Name
         stack.setCustomName(Text.literal(name).formatted(rarity.getColor()));
 
-        // 2. Setup NBT Data for StatsHandler
+        // 2. Stats & Flags
         NbtCompound root = stack.getOrCreateNbt();
         NbtCompound statsTag = new NbtCompound();
-
-        // Write stats to NBT
-        stats.forEach((stat, value) -> {
-            statsTag.putDouble(stat.name(), value);
-        });
-
+        if (stats != null) {
+            stats.forEach((stat, value) -> statsTag.putDouble(stat.name(), value));
+        }
         root.put("skyblock:stats", statsTag);
 
-        // 3. Hide Vanilla Attributes (Attack Damage, etc.) & Unbreakable
-        // Flag 2 = Hide Attributes, Flag 4 = Hide Unbreakable
-        root.putInt("HideFlags", 6);
+        root.putInt("HideFlags", 255); // Hide everything vanilla
         root.putBoolean("Unbreakable", true);
 
-        // 4. Generate Lore
+        // 3. Hypixel ExtraAttributes (Crucial for API/Mods)
+        NbtCompound extra = new NbtCompound();
+        extra.putString("id", skyblockId);
+        extra.putString("uuid", UUID.randomUUID().toString()); // Unique per item instance
+        root.put("ExtraAttributes", extra);
+
+        // 4. Initial Lore
         buildLore(stack, rarity, stats);
 
         return stack;
     }
 
     /**
-     * Internal method to build the initial lore (Stats + Rarity).
+     * For Skull Items (Talismans, Dragon Heads, etc.)
      */
+    public static ItemStack createSkull(String skyblockId, String name, Rarity rarity, Map<StatType, Double> stats, String textureUrl) {
+        ItemStack stack = create(skyblockId, Items.PLAYER_HEAD, name, rarity, stats);
+        
+        NbtCompound root = stack.getOrCreateNbt();
+        NbtCompound skullOwner = new NbtCompound();
+        skullOwner.putString("Id", UUID.randomUUID().toString()); // Random UUID for texture
+        skullOwner.putString("Name", "SkyblockItem");
+        
+        NbtCompound properties = new NbtCompound();
+        NbtList textures = new NbtList();
+        NbtCompound textureNode = new NbtCompound();
+        textureNode.putString("Value", textureUrl); // Base64 Texture
+        textures.add(textureNode);
+        properties.put("textures", textures);
+        skullOwner.put("Properties", properties);
+        
+        root.put("SkullOwner", skullOwner);
+        return stack;
+    }
+
     private static void buildLore(ItemStack stack, Rarity rarity, Map<StatType, Double> stats) {
         List<Text> lore = new ArrayList<>();
+        
+        if (stats != null) {
+            stats.forEach((stat, value) -> {
+                if (value != 0) {
+                    lore.add(Text.literal(String.format("§7%s: %s%.0f%s", stat.getName(), stat.getColor(), value, stat.getIcon())));
+                }
+            });
+        }
+        
+        lore.add(Text.empty());
+        lore.add(Text.literal(rarity.getColor() + "§l" + rarity.name()));
 
-        // Add Stats to Lore
-        stats.forEach((stat, value) -> {
-            String line = String.format("§7%s: §a+%.0f%s", stat.getName(), value, stat.getIcon());
-            lore.add(Text.literal(line));
-        });
-
-        lore.add(Text.empty()); // Spacer
-
-        // Rarity Line at Bottom
-        String rarityLine = String.format("%s§l%s", rarity.getColor(), rarity.name());
-        lore.add(Text.literal(rarityLine));
-
-        // Apply Lore
-        NbtCompound nbt = stack.getOrCreateNbt();
-        NbtCompound display = nbt.getCompound("display");
+        NbtCompound display = stack.getOrCreateSubNbt("display");
         NbtList loreList = new NbtList();
-
-        for (Text t : lore) {
-            loreList.add(NbtString.of(Text.Serializer.toJson(t)));
-        }
-
+        lore.forEach(t -> loreList.add(NbtString.of(Text.Serializer.toJson(t))));
         display.put("Lore", loreList);
-        nbt.put("display", display);
     }
-
-    /**
-     * Helper to append extra lore lines (Abilities, Descriptions) to an existing item.
-     * Inserts text BEFORE the Rarity line (last line).
-     */
+    
     public static void addLore(ItemStack stack, String... lines) {
-        NbtCompound nbt = stack.getOrCreateNbt();
-        NbtCompound display = nbt.getCompound("display");
-        NbtList loreList = display.getList("Lore", 8); // 8 = String Tag
-
-        // We want to insert ability lore before the last line (which is Rarity)
-        // If lore is empty, just add them.
-        int insertIndex = Math.max(0, loreList.size() - 1);
-
+        NbtCompound display = stack.getOrCreateSubNbt("display");
+        NbtList loreList = display.getList("Lore", 8);
+        int index = Math.max(0, loreList.size() - 1); // Insert before rarity
+        
         for (String line : lines) {
-            loreList.add(insertIndex, NbtString.of(Text.Serializer.toJson(Text.literal(line))));
-            insertIndex++;
+            loreList.add(index++, NbtString.of(Text.Serializer.toJson(Text.literal(line))));
         }
-
         display.put("Lore", loreList);
-        nbt.put("display", display);
-    }
-
-    /**
-     * Helper to set CustomModelData for Resource Packs and Internal IDs.
-     */
-    public static void setCustomModelData(ItemStack stack, String skyblockId, int modelData) {
-        NbtCompound nbt = stack.getOrCreateNbt();
-
-        // Hypixel "ExtraAttributes" standard
-        NbtCompound extra = nbt.getCompound("ExtraAttributes");
-        extra.putString("id", skyblockId);
-        nbt.put("ExtraAttributes", extra);
-
-        // Texture Pack support
-        nbt.putInt("CustomModelData", modelData);
     }
 }
