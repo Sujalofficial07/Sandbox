@@ -1,6 +1,7 @@
 package com.sujal.skyblocksandbox.ability;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -21,13 +22,13 @@ public class CooldownManager {
                  .put(abilityId, System.currentTimeMillis() + (seconds * 1000L));
     }
 
-    // Overload for milliseconds (for shortbows)
+    // Overload for milliseconds (for shortbows/spam abilities)
     public static void setCooldownMillis(PlayerEntity player, String abilityId, int ms) {
         cooldowns.computeIfAbsent(player.getUuid(), k -> new HashMap<>())
                  .put(abilityId, System.currentTimeMillis() + ms);
     }
     
     public static void sendCooldownMessage(PlayerEntity player) {
-        player.sendMessage(net.minecraft.text.Text.literal("§cThis ability is on cooldown!"), true);
+        player.sendMessage(Text.literal("§cThis ability is on cooldown!"), true);
     }
 }
