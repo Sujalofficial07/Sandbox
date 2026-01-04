@@ -5,7 +5,8 @@ public enum StatType {
     DEFENSE("Defense", "❈", 0.0),
     MANA("Intelligence", "✎", 100.0),
     STRENGTH("Strength", "❁", 0.0),
-    CRIT_CHANCE("Crit Chance", "☣", 30.0), // Base 30%
+    CRIT_CHANCE("Crit Chance", "☣", 30.0),
+    CRIT_DAMAGE("Crit Damage", "☠", 50.0), // New Stat
     SPEED("Speed", "✦", 100.0);
 
     private final String name;
