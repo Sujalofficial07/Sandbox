@@ -5,11 +5,11 @@
   "name": "SkyblockSandbox",
   "description": "A Hypixel Skyblock remake mod.",
   "authors": [
-    "sujal"
+    "Sujal"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "sources": "https://github.com/Sujal/SkyblockSandbox"
   },
   "license": "MIT",
   "icon": "assets/skyblocksandbox/icon.png",
@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "com.sujal.skyblocksandbox.SkyblockSandbox"
+    ],
+    "client": [
+      "com.sujal.skyblocksandbox.client.SkyblockSandboxClient"
     ]
   },
   "mixins": [
