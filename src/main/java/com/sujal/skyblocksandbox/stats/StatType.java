@@ -10,6 +10,7 @@ public enum StatType {
     SPEED("Speed", "✦", 100.0, Formatting.WHITE),
 
     // --- OFFENSIVE STATS ---
+    DAMAGE("Damage", "❁", 0.0, Formatting.RED), // Added this!
     STRENGTH("Strength", "❁", 0.0, Formatting.RED),
     CRIT_CHANCE("Crit Chance", "☣", 30.0, Formatting.BLUE),
     CRIT_DAMAGE("Crit Damage", "☠", 50.0, Formatting.BLUE),
