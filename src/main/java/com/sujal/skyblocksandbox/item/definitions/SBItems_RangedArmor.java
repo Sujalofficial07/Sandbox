@@ -6,7 +6,6 @@ import com.sujal.skyblocksandbox.stats.StatType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Formatting;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class SBItems_RangedArmor {
         stats.put(StatType.ATTACK_SPEED, 40.0);
 
         ItemStack stack = SBItemFactory.create(Items.BOW, "Terminator", Rarity.LEGENDARY, stats);
-        SBItems_Melee.addLore(stack,
+        SBItemFactory.addLore(stack,
             "§7Shoots §a3 §7arrows at once.",
             "§7Can damage endermen.",
             "§7Divides your §9Crit Chance §7by 4!",
@@ -34,7 +33,7 @@ public class SBItems_RangedArmor {
             "§e5 §7enemies.",
             "§8Cooldown: §a2s"
         );
-        SBItems_Melee.setCustomModelData(stack, "TERMINATOR", 11);
+        SBItemFactory.setCustomModelData(stack, "TERMINATOR", 11);
         return stack;
     }
 
@@ -46,12 +45,12 @@ public class SBItems_RangedArmor {
         stats.put(StatType.CRIT_DAMAGE, 110.0);
 
         ItemStack stack = SBItemFactory.create(Items.BOW, "Juju Shortbow", Rarity.EPIC, stats);
-        SBItems_Melee.addLore(stack,
+        SBItemFactory.addLore(stack,
             "§7Shoots instantly!",
             "§7Can damage endermen.",
             "§8Requires §5Enderman Slayer III"
         );
-        SBItems_Melee.setCustomModelData(stack, "JUJU_SHORTBOW", 12);
+        SBItemFactory.setCustomModelData(stack, "JUJU_SHORTBOW", 12);
         return stack;
     }
 
@@ -62,13 +61,13 @@ public class SBItems_RangedArmor {
         stats.put(StatType.CRIT_DAMAGE, 39.0);
 
         ItemStack stack = SBItemFactory.create(Items.BOW, "Mosquito Bow", Rarity.LEGENDARY, stats);
-        SBItems_Melee.addLore(stack,
+        SBItemFactory.addLore(stack,
             "§6Ability: Nasty Bite §e§lSNEAK",
             "§7Fully charged shots cost §b11% §7of",
             "§7max mana and deal §c+19% §7damage.",
             "§7Heals for 2x the mana cost."
         );
-        SBItems_Melee.setCustomModelData(stack, "MOSQUITO_BOW", 13);
+        SBItemFactory.setCustomModelData(stack, "MOSQUITO_BOW", 13);
         return stack;
     }
 
@@ -79,22 +78,16 @@ public class SBItems_RangedArmor {
         stats.put(StatType.HEALTH, 300.0);
         stats.put(StatType.DEFENSE, 100.0);
 
-        // Uses PLAYER_HEAD typically, for now using Iron Helmet as placeholder or specific implementation needed
         ItemStack stack = SBItemFactory.create(Items.PLAYER_HEAD, "Warden Helmet", Rarity.LEGENDARY, stats);
-        SBItems_Melee.addLore(stack,
+        SBItemFactory.addLore(stack,
             "§6Ability: Brute Force",
             "§7Halves your §f✦ Speed §7but grants",
             "§c+20% §7base weapon damage for",
             "§7every §a25 §f✦ Speed§7."
         );
         
-        // Warden Helmet Texture (Skull)
-        NbtCompound root = stack.getOrCreateNbt();
-        NbtCompound skullOwner = new NbtCompound();
-        skullOwner.putString("Name", "Warden Helmet");
-        // UUID and Texture string would go here for real heads
-        // root.put("SkullOwner", ...); 
-        SBItems_Melee.setCustomModelData(stack, "WARDEN_HELMET", 14);
+        // Custom Texture Logic would go here usually
+        SBItemFactory.setCustomModelData(stack, "WARDEN_HELMET", 14);
         return stack;
     }
 
@@ -120,20 +113,21 @@ public class SBItems_RangedArmor {
         stats.put(StatType.DEFENSE, 140.0);
         stats.put(StatType.STRENGTH, 40.0);
         stats.put(StatType.CRIT_DAMAGE, 30.0);
-        stats.put(StatType.MANA, 30.0); // Witherborn set base
+        stats.put(StatType.MANA, 30.0);
 
         ItemStack stack = SBItemFactory.create(Items.LEATHER_CHESTPLATE, "Necron's Chestplate", Rarity.LEGENDARY, stats);
-        // Set Color to Orange/Red (Necron Color)
+        
+        // Color
         NbtCompound display = stack.getOrCreateSubNbt("display");
         display.putInt("color", 16733525); 
 
-        SBItems_Melee.addLore(stack,
+        SBItemFactory.addLore(stack,
             "§6Full Set Bonus: Witherborn",
             "§7Spawns a wither minion every",
             "§e30s §7healing you and dealing",
             "§7damage to nearby enemies."
         );
-        SBItems_Melee.setCustomModelData(stack, "NECRON_CHESTPLATE", 19);
+        SBItemFactory.setCustomModelData(stack, "NECRON_CHESTPLATE", 19);
         return stack;
     }
 
@@ -149,14 +143,14 @@ public class SBItems_RangedArmor {
         stats.put(StatType.SPEED, speed);
 
         ItemStack stack = SBItemFactory.create(item, "Superior Dragon " + name, Rarity.LEGENDARY, stats);
-        SBItems_Melee.addLore(stack,
+        SBItemFactory.addLore(stack,
             "§6Full Set Bonus: Superior Blood",
             "§7Most of your stats are increased",
             "§7by §a5%§7 and §6Aspect of the",
             "§6Dragons §7ability deals §a50%",
             "§7more damage."
         );
-        SBItems_Melee.setCustomModelData(stack, "SUPERIOR_" + name.toUpperCase(), 15);
+        SBItemFactory.setCustomModelData(stack, "SUPERIOR_" + name.toUpperCase(), 15);
         return stack;
     }
 }
