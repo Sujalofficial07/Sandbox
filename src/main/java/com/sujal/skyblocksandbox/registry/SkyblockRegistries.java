@@ -23,11 +23,13 @@ public class SkyblockRegistries {
         CurrencyManager.init();
     }
     
-    private static void registerCommands() {
+        private static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             SBItemCommand.register(dispatcher);
+            com.sujal.skyblocksandbox.command.ProfileCommand.register(dispatcher); // Add this line
         });
     }
+
 
     private static void registerEvents() {
         // --- NEW: Register Ability Listener ---
