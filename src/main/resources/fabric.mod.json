@@ -16,11 +16,13 @@
     "client": [
       "com.sujal.skyblockstats.client.SkyblockStatsClient"
     ],
-    "cardinal-components": [
-        "com.sujal.skyblockstats.registry.ComponentRegistry"
-    ],
     "cardinal-components-entity": [
         "com.sujal.skyblockstats.registry.ComponentRegistry"
+    ]
+  },
+  "custom": {
+    "cardinal-components": [
+      "skyblockstats:stats"
     ]
   },
   "mixins": [
