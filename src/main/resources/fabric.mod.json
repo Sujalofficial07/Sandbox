@@ -13,6 +13,9 @@
     "main": [
       "com.sujal.skyblockstats.SkyblockStatsMod"
     ],
+    "client": [
+      "com.sujal.skyblockstats.client.SkyblockStatsClient"
+    ],
     "cardinal-components-entity": [
         "com.sujal.skyblockstats.registry.ComponentRegistry"
     ]
