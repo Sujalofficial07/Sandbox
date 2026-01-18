@@ -27,5 +27,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sandbox
+          name: status
           path: build/libs/*.jar
