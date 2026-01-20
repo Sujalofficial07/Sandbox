@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "skyblock-stats",
+  "version": "${version}",
+  "name": "Skyblock Stats",
+  "description": "Stat calculation engine",
+  "authors": ["Sujal"],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.sujal.skyblock.stats.SkyblockStatsMod"
+    ]
+  },
+  "depends": {
+    "skyblock-core": "*"
+  }
+}
