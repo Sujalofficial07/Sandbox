@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "skyblock-core",
+  "version": "${version}",
+  "name": "Skyblock Core",
+  "description": "Core data systems for Sujal's Skyblock",
+  "authors": ["Sujal"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/skyblock-core/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.sujal.skyblock.core.SkyblockCoreMod"
+    ]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.14.22",
+    "minecraft": "~1.20.1",
+    "java": ">=17"
+  }
+}
