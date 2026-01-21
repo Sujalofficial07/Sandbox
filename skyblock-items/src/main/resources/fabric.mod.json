@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "skyblock-items",
+  "version": "${version}",
+  "name": "Skyblock Items",
+  "description": "Custom Items Generator",
+  "authors": ["Sujal"],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.sujal.skyblock.items.SkyblockItemsMod"
+    ]
+  },
+  "depends": {
+    "skyblock-core": "*",
+    "skyblock-stats": "*",
+    "fabric-api": "*"
+  }
+}
