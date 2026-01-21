@@ -2,6 +2,7 @@ package com.sujal.skyblock.core.data;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement; // <--- ADDED THIS IMPORT
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
@@ -17,6 +18,7 @@ public class ProfileManager extends PersistentState {
     // Required for reading from NBT
     public static ProfileManager fromNbt(NbtCompound tag) {
         ProfileManager manager = new ProfileManager();
+        // NbtElement is now recognized
         NbtList list = tag.getList("Profiles", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < list.size(); i++) {
             SkyblockProfile profile = SkyblockProfile.fromNbt(list.getCompound(i));
@@ -36,7 +38,6 @@ public class ProfileManager extends PersistentState {
     }
 
     public static ProfileManager getServerInstance(ServerWorld world) {
-        // Always use the Overworld storage to keep data consistent across dimensions
         return world.getServer().getOverworld().getPersistentStateManager()
                 .getOrCreate(ProfileManager::fromNbt, ProfileManager::new, DATA_NAME);
     }
@@ -44,7 +45,7 @@ public class ProfileManager extends PersistentState {
     public SkyblockProfile getProfile(PlayerEntity player) {
         return profiles.computeIfAbsent(player.getUuid(), uuid -> {
             SkyblockProfile newProfile = new SkyblockProfile(uuid);
-            this.markDirty(); // Tells Minecraft to save this file
+            this.markDirty();
             return newProfile;
         });
     }
