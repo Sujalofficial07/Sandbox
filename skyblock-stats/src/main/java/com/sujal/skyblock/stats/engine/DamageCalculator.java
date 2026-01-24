@@ -8,34 +8,40 @@ import net.minecraft.item.ItemStack;
 
 public class DamageCalculator {
 
-    public static float calculateDamage(PlayerEntity player, SkyblockProfile profile, boolean isCrit) {
+    // Hypixel Melee Damage Formula
+    public static float calculateMeleeDamage(PlayerEntity player, SkyblockProfile profile, boolean isCrit) {
         // 1. Get Stats
         double strength = StatCalculator.getFinalStat(player, profile, StatType.STRENGTH);
         double critDmg = StatCalculator.getFinalStat(player, profile, StatType.CRIT_DAMAGE);
         
-        // 2. Get Weapon Damage
         ItemStack heldItem = player.getMainHandStack();
-        double weaponDamage = SBItemUtils.getStat(heldItem, StatType.STRENGTH); // Usually "Damage" stat, using Strength field for now or add DAMAGE stat
-        // NOTE: Ideally add DAMAGE to StatType enum. For now assuming base 5 + item strength.
+        double weaponDamage = SBItemUtils.getStat(heldItem, StatType.STRENGTH); // Using Str field for Damage for now
         double baseDamage = 5 + weaponDamage; 
 
-        // 3. The Hypixel Formula
-        // Damage = (5 + WeaponDamage + Strength/5) * (1 + Strength/100) * (1 + CritDamage/100) * ...
-        
+        // Formula: (5 + WeaponDamage + Strength/5) * (1 + Strength/100)
         double initialDamage = (baseDamage + (strength / 5.0)) * (1.0 + (strength / 100.0));
 
-        // 4. Apply Crit
+        // Apply Crit
         if (isCrit) {
             initialDamage *= (1.0 + (critDmg / 100.0));
         }
 
-        // 5. Add Combat Level Multiplier (Example: +4% per level)
-        // double combatLevel = profile.getSkillLevel("COMBAT");
+        // Add Combat Level Additive (Placeholder: +4% per level, assume lvl 0 for now)
         // initialDamage *= (1 + (combatLevel * 0.04));
 
         return (float) initialDamage;
     }
     
+    // Hypixel Magic/Ability Damage Formula
+    public static float calculateMagicDamage(PlayerEntity player, SkyblockProfile profile, double baseAbilityDamage, double abilityScaling) {
+        double intelligence = StatCalculator.getFinalStat(player, profile, StatType.INTELLIGENCE);
+        
+        // Formula: BaseAbilityDmg * (1 + (Intelligence / 100) * Scaling)
+        double magicDamage = baseAbilityDamage * (1.0 + ((intelligence / 100.0) * abilityScaling));
+        
+        return (float) magicDamage;
+    }
+
     public static boolean checkCrit(PlayerEntity player, SkyblockProfile profile) {
         double cc = StatCalculator.getFinalStat(player, profile, StatType.CRIT_CHANCE);
         return Math.random() * 100 < cc;
