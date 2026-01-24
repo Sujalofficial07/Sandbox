@@ -4,28 +4,28 @@ import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
 
-    // This modifies the health value the renderer SEES.
-    // We scale it so 2000 HP looks like 20 HP (10 Hearts).
-    @ModifyVariable(method = "renderHealthBar", at = @At("STORE"), ordinal = 0)
-    private float modifyHealthForDisplay(float originalHealth, PlayerEntity player) {
-        float maxHealth = player.getMaxHealth();
-        // If we have massive health, scale it down visually to 20 (10 hearts)
-        if (maxHealth > 20) {
-            return (originalHealth / maxHealth) * 20.0f;
-        }
-        return originalHealth;
+    // Intercept when the HUD checks for Max Health
+    @Redirect(method = "renderStatusBars", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getMaxHealth()F"))
+    private float fakeMaxHealth(PlayerEntity player) {
+        // Visually, the player always has 20 health (10 hearts) max
+        return 20.0f;
     }
 
-    @ModifyVariable(method = "renderHealthBar", at = @At("STORE"), ordinal = 1)
-    private float modifyMaxHealthForDisplay(float originalMaxHealth) {
-        if (originalMaxHealth > 20) {
-            return 20.0f; // Visual Max Health is always 10 hearts
+    // Intercept when the HUD checks for Current Health
+    @Redirect(method = "renderStatusBars", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getHealth()F"))
+    private float fakeHealth(PlayerEntity player) {
+        float realMax = player.getMaxHealth();
+        float realCurrent = player.getHealth();
+
+        // If health is huge (e.g., 500/1000), scale it to fit 20 (e.g., 10/20)
+        if (realMax > 20) {
+            return (realCurrent / realMax) * 20.0f;
         }
-        return originalMaxHealth;
+        return realCurrent;
     }
 }
