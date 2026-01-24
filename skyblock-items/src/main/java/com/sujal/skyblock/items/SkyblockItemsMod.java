@@ -1,11 +1,12 @@
 package com.sujal.skyblock.items;
 
-import com.sujal.skyblock.items.registry.SkyblockRegistry;
+import com.sujal.skyblock.items.menu.MenuHandler;
 import net.fabricmc.api.ModInitializer;
 
 public class SkyblockItemsMod implements ModInitializer {
     @Override
     public void onInitialize() {
-        SkyblockRegistry.register(); // Loads the Creative Tab
+        Items.register(); // Load all items like Hyperion
+        MenuHandler.register(); // Enable /sbitems command
     }
 }
