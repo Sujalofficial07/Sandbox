@@ -6,10 +6,13 @@
     "PlayerEntityMixin",
     "ServerPlayerEntityMixin",
     "HungerManagerMixin",
-    "ItemStackTooltipMixin" 
+    "ItemStackTooltipMixin",
+    "LivingEntityDamageMixin",
+    "HUDPlayerMixin",
+    "MenuClickMixin"
   ],
   "client": [
-      "client.InGameHudMixin"
+    "client.InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
