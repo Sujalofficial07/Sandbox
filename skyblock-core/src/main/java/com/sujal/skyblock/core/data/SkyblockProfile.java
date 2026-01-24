@@ -2,8 +2,6 @@ package com.sujal.skyblock.core.data;
 
 import com.sujal.skyblock.core.api.StatType;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -13,42 +11,45 @@ import java.util.UUID;
 public class SkyblockProfile {
     private final UUID playerUUID;
     private double coins;
-    private double bankBalance;
+    private double currentMana;
     private final Map<StatType, Double> statMultipliers;
-    private final Map<String, Integer> skillLevels;
     private final Map<String, Double> skillXp;
-    
-    // Constructor for new players
+    private long lastManaRegenTick;
+
     public SkyblockProfile(UUID uuid) {
         this.playerUUID = uuid;
         this.coins = 0.0;
-        this.bankBalance = 0.0;
+        this.currentMana = 100.0;
         this.statMultipliers = new EnumMap<>(StatType.class);
-        this.skillLevels = new HashMap<>();
         this.skillXp = new HashMap<>();
-        
+        this.lastManaRegenTick = 0;
+
         // Initialize default stats
         for (StatType stat : StatType.values()) {
             statMultipliers.put(stat, 0.0);
         }
     }
 
-    // Getters
     public UUID getUuid() { return playerUUID; }
     public double getCoins() { return coins; }
-    public double getBankBalance() { return bankBalance; }
+    public double getCurrentMana() { return currentMana; }
 
-    // Logic
-    public void addCoins(double amount) {
-        this.coins += amount;
-    }
-
-    public boolean removeCoins(double amount) {
-        if (this.coins >= amount) {
-            this.coins -= amount;
+    public void addCoins(double amount) { this.coins += amount; }
+    
+    // Mana Logic
+    public boolean consumeMana(double amount) {
+        if (this.currentMana >= amount) {
+            this.currentMana -= amount;
             return true;
         }
         return false;
+    }
+
+    public void regenMana(double maxMana) {
+        // Regen 2% of max mana per second. 
+        // Logic should be called every tick, so we add (2% / 20)
+        double regenPerTick = (maxMana * 0.02) / 20.0;
+        this.currentMana = Math.min(maxMana, this.currentMana + regenPerTick);
     }
 
     public double getStatBonus(StatType type) {
@@ -58,17 +59,16 @@ public class SkyblockProfile {
     public void setStatBonus(StatType type, double value) {
         statMultipliers.put(type, value);
     }
-    
+
     public void addSkillXp(String skillName, double xp) {
         this.skillXp.put(skillName, this.skillXp.getOrDefault(skillName, 0.0) + xp);
-        // Level up logic will be handled by the Skills module events
     }
 
-    // Serialization (Saving to Disk)
+    // NBT Serialization
     public NbtCompound writeNbt(NbtCompound tag) {
         tag.putUuid("OwnerUUID", playerUUID);
         tag.putDouble("Coins", coins);
-        tag.putDouble("Bank", bankBalance);
+        tag.putDouble("CurrentMana", currentMana);
 
         NbtCompound statsTag = new NbtCompound();
         statMultipliers.forEach((stat, val) -> statsTag.putDouble(stat.name(), val));
@@ -81,13 +81,14 @@ public class SkyblockProfile {
         return tag;
     }
 
-    // Deserialization (Loading from Disk)
     public static SkyblockProfile fromNbt(NbtCompound tag) {
         UUID uuid = tag.getUuid("OwnerUUID");
         SkyblockProfile profile = new SkyblockProfile(uuid);
         
         profile.coins = tag.getDouble("Coins");
-        profile.bankBalance = tag.getDouble("Bank");
+        if (tag.contains("CurrentMana")) {
+            profile.currentMana = tag.getDouble("CurrentMana");
+        }
 
         if (tag.contains("Stats")) {
             NbtCompound statsTag = tag.getCompound("Stats");
