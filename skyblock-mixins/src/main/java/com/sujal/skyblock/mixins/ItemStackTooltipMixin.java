@@ -29,16 +29,22 @@ public class ItemStackTooltipMixin {
 
         List<Text> tooltip = cir.getReturnValue();
         
-        // 1. Keep Name, Clear Vanilla
+        // 1. Keep Name, Clear Vanilla Attributes
         Text name = tooltip.get(0);
         tooltip.clear();
         tooltip.add(name);
 
-        // 2. Add Stats (Hypixel Order: Dmg -> Str -> CC -> CD -> HP -> Def -> Intel)
+        // 2. Add Gear Score (Pink)
+        addStatLine(tooltip, stack, StatType.GEAR_SCORE);
+
+        // 3. Add Stats (Exact Clean Hyperion Order)
         addStatLine(tooltip, stack, StatType.DAMAGE);
         addStatLine(tooltip, stack, StatType.STRENGTH);
         addStatLine(tooltip, stack, StatType.CRIT_CHANCE);
         addStatLine(tooltip, stack, StatType.CRIT_DAMAGE);
+        
+        tooltip.add(Text.empty()); // Spacer
+        
         addStatLine(tooltip, stack, StatType.HEALTH);
         addStatLine(tooltip, stack, StatType.DEFENSE);
         addStatLine(tooltip, stack, StatType.INTELLIGENCE);
@@ -47,11 +53,12 @@ public class ItemStackTooltipMixin {
 
         tooltip.add(Text.empty());
 
-        // 3. Add Ability
+        // 4. Add Ability (Gold Title + Yellow RIGHT CLICK)
         String abilityName = SBItemUtils.getAbilityName(stack);
         if (!abilityName.isEmpty()) {
-            // Header: "Ability: Name  RIGHT CLICK"
+            // "Ability: Wither Impact" (Gold)
             MutableText abilityHeader = Text.literal("Ability: " + abilityName).formatted(Formatting.GOLD);
+            // " RIGHT CLICK" (Yellow Bold)
             abilityHeader.append(Text.literal("  RIGHT CLICK").formatted(Formatting.YELLOW, Formatting.BOLD));
             tooltip.add(abilityHeader);
 
@@ -63,18 +70,17 @@ public class ItemStackTooltipMixin {
             }
             
             // Mana Cost & Cooldown
-            // In a real implementation, store cost in NBT. For now, hardcoded visual style.
             tooltip.add(Text.literal("Mana Cost: 50").formatted(Formatting.DARK_GRAY)); 
             tooltip.add(Text.literal("Cooldown: 10s").formatted(Formatting.DARK_GRAY));
             tooltip.add(Text.empty());
         }
 
-        // 4. Footer (Rarity + Type)
+        // 5. Footer (Rarity + DUNGEON SWORD)
         Rarity rarity = SBItemUtils.getRarity(stack);
         ItemType type = SBItemUtils.getType(stack);
         
-        // "LEGENDARY SWORD" in bold rarity color
-        MutableText footer = Text.literal(rarity.getName() + " " + type.getName())
+        // "LEGENDARY DUNGEON SWORD"
+        MutableText footer = Text.literal(rarity.getName() + " DUNGEON " + type.getName())
                 .formatted(rarity.getColor(), Formatting.BOLD);
                 
         tooltip.add(footer);
@@ -83,17 +89,20 @@ public class ItemStackTooltipMixin {
     private void addStatLine(List<Text> tooltip, ItemStack stack, StatType stat) {
         double value = SBItemUtils.getStat(stack, stat);
         if (value != 0) {
-            // Format: "Damage: +260" in Red
-            // Hypixel format is: Gray Name + ": " + Color + "+" + Value
-            
+            // Gear Score format: "Gear Score: 673" (No + sign)
+            if (stat == StatType.GEAR_SCORE) {
+                 tooltip.add(Text.literal(stat.getName() + ": " + (int)value).formatted(stat.getColor()));
+                 return;
+            }
+
+            // Normal Stats: "Damage: +293"
             MutableText line = Text.literal(stat.getName() + ": ")
                     .formatted(Formatting.GRAY);
             
             String valStr = "+" + (int)value;
-            // Add % for Crit Chance / Crit Damage
-            if (stat == StatType.CRIT_CHANCE || stat == StatType.CRIT_DAMAGE) {
-                valStr += "%";
-            }
+            // Add suffix
+            if (stat == StatType.CRIT_CHANCE || stat == StatType.CRIT_DAMAGE) valStr += "%";
+            if (stat == StatType.HEALTH) valStr += " HP";
 
             line.append(Text.literal(valStr).formatted(stat.getColor()));
             tooltip.add(line);
