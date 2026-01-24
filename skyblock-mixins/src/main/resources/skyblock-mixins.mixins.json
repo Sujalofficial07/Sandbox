@@ -3,7 +3,13 @@
   "package": "com.sujal.skyblock.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ServerPlayerEntityMixin"
+    "PlayerEntityMixin",
+    "ServerPlayerEntityMixin",
+    "HungerManagerMixin",
+    "ItemStackTooltipMixin" 
+  ],
+  "client": [
+      "client.InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
