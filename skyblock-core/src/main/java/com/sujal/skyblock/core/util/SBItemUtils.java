@@ -1,5 +1,6 @@
 package com.sujal.skyblock.core.util;
 
+import com.sujal.skyblock.core.api.ItemType;
 import com.sujal.skyblock.core.api.Rarity;
 import com.sujal.skyblock.core.api.StatType;
 import net.minecraft.item.ItemStack;
@@ -12,13 +13,8 @@ public class SBItemUtils {
         return stack.getOrCreateSubNbt(SB_TAG);
     }
 
-    public static void setString(ItemStack stack, String key, String value) {
-        getSBData(stack).putString(key, value);
-    }
-
-    public static String getString(ItemStack stack, String key) {
-        if (!stack.hasNbt() || !stack.getNbt().contains(SB_TAG)) return "";
-        return getSBData(stack).getString(key);
+    public static boolean isSkyblockItem(ItemStack stack) {
+        return stack.hasNbt() && stack.getNbt().contains(SB_TAG);
     }
 
     public static void setStat(ItemStack stack, StatType stat, double value) {
@@ -31,15 +27,36 @@ public class SBItemUtils {
     }
 
     public static void setRarity(ItemStack stack, Rarity rarity) {
-        setString(stack, "Rarity", rarity.name());
+        getSBData(stack).putString("Rarity", rarity.name());
     }
 
     public static Rarity getRarity(ItemStack stack) {
-        String r = getString(stack, "Rarity");
-        try {
-            return Rarity.valueOf(r);
-        } catch (Exception e) {
-            return Rarity.COMMON; // Default
-        }
+        if (!isSkyblockItem(stack)) return Rarity.COMMON;
+        String r = getSBData(stack).getString("Rarity");
+        try { return Rarity.valueOf(r); } catch (Exception e) { return Rarity.COMMON; }
     }
+
+    public static void setType(ItemStack stack, ItemType type) {
+        getSBData(stack).putString("Type", type.name());
     }
+
+    public static ItemType getType(ItemStack stack) {
+        if (!isSkyblockItem(stack)) return ItemType.ITEM;
+        String t = getSBData(stack).getString("Type");
+        try { return ItemType.valueOf(t); } catch (Exception e) { return ItemType.ITEM; }
+    }
+
+    public static void setAbility(ItemStack stack, String name, String desc) {
+        NbtCompound tag = getSBData(stack);
+        tag.putString("AbilityName", name);
+        tag.putString("AbilityDesc", desc);
+    }
+
+    public static String getAbilityName(ItemStack stack) {
+        return getSBData(stack).getString("AbilityName");
+    }
+
+    public static String getAbilityDesc(ItemStack stack) {
+        return getSBData(stack).getString("AbilityDesc");
+    }
+}
