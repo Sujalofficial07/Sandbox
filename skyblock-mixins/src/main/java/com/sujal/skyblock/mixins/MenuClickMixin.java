@@ -27,6 +27,9 @@ public abstract class MenuClickMixin {
         if (player.getWorld().isClient) return; // Server-side logic only
 
         Slot slot = handler.slots.get(slotIndex);
+        
+        // Cast to ServerPlayerEntity immediately
+        if (!(player instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 
         // -----------------------------------------------------------
@@ -64,7 +67,8 @@ public abstract class MenuClickMixin {
 
                 // Slot 22: Close (Barrier)
                 else if (slotIndex == 22) {
-                    player.closeHandledScreen();
+                    // FIX: Use 'serverPlayer' instead of 'player'
+                    serverPlayer.closeHandledScreen();
                 }
             }
         }
