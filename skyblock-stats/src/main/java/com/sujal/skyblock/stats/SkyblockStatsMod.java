@@ -1,16 +1,74 @@
-package com.sujal.skyblock.stats;
+package com.sujal.skyblock.stats.engine;
 
-import net.fabricmc.api.ModInitializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sujal.skyblock.core.api.StatType;
+import com.sujal.skyblock.core.data.ProfileManager;
+import com.sujal.skyblock.core.data.SkyblockProfile;
+import com.sujal.skyblock.core.util.SBItemUtils;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 
-public class SkyblockStatsMod implements ModInitializer {
-    public static final String MOD_ID = "skyblock-stats";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+public class StatSyncHandler {
 
-    @Override
-    public void onInitialize() {
-        LOGGER.info("Skyblock Stats Engine Loaded");
-        StatSyncHandler.register();
+    public static void register() {
+        // Sync stats every tick
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                updatePlayerStats(player);
+            }
+        });
+    }
+
+    private static void updatePlayerStats(ServerPlayerEntity player) {
+        ServerWorld world = (ServerWorld) player.getWorld();
+        ProfileManager pm = ProfileManager.getServerInstance(world);
+        SkyblockProfile profile = pm.getProfile(player);
+
+        // 1. Calculate Totals (Base + Profile Bonus)
+        double totalHealth = StatType.HEALTH.getBaseValue() + profile.getStatBonus(StatType.HEALTH);
+        double totalSpeed = StatType.SPEED.getBaseValue() + profile.getStatBonus(StatType.SPEED);
+        double totalIntel = StatType.INTELLIGENCE.getBaseValue() + profile.getStatBonus(StatType.INTELLIGENCE);
+
+        // 2. Check Armor & Hand Items for stats
+        Iterable<ItemStack> armorItems = player.getArmorItems();
+        for (ItemStack stack : armorItems) {
+            if (SBItemUtils.isSkyblockItem(stack)) {
+                totalHealth += SBItemUtils.getStat(stack, StatType.HEALTH);
+                totalSpeed += SBItemUtils.getStat(stack, StatType.SPEED);
+                totalIntel += SBItemUtils.getStat(stack, StatType.INTELLIGENCE);
+            }
+        }
+        
+        ItemStack hand = player.getMainHandStack();
+        if (SBItemUtils.isSkyblockItem(hand)) {
+            totalHealth += SBItemUtils.getStat(hand, StatType.HEALTH);
+            totalSpeed += SBItemUtils.getStat(hand, StatType.SPEED);
+            totalIntel += SBItemUtils.getStat(hand, StatType.INTELLIGENCE);
+        }
+
+        // 3. Apply to Vanilla Attributes
+        
+        // HEALTH
+        var healthAttr = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        if (healthAttr != null) {
+            if (Math.abs(healthAttr.getBaseValue() - totalHealth) > 0.1) {
+                healthAttr.setBaseValue(totalHealth);
+                if (player.getHealth() > totalHealth) player.setHealth((float) totalHealth);
+            }
+        }
+
+        // SPEED (Hypixel 100 Speed = Vanilla 0.1)
+        var speedAttr = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        if (speedAttr != null) {
+            double vanillaSpeed = totalSpeed / 1000.0; 
+            if (Math.abs(speedAttr.getBaseValue() - vanillaSpeed) > 0.001) {
+                speedAttr.setBaseValue(vanillaSpeed);
+            }
+        }
+        
+        // MANA REGEN
+        profile.regenMana(totalIntel);
     }
 }
