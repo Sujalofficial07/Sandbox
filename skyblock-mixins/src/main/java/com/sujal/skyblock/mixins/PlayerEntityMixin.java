@@ -8,7 +8,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,15 +38,12 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             boolean isCrit = DamageCalculator.checkCrit(player, profile);
 
             // 3. Calculate Final Damage using Hypixel Formula
-            float finalDamage = DamageCalculator.calculateDamage(player, profile, isCrit);
+            // FIXED: Method name updated to 'calculateMeleeDamage'
+            float finalDamage = DamageCalculator.calculateMeleeDamage(player, profile, isCrit);
 
             // 4. Override Vanilla Attribute
             // We set the base value of GENERIC_ATTACK_DAMAGE to our calculated value.
-            // When vanilla logic continues after this injection, it will read this new value.
             this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(finalDamage);
-
-            // Optional: Send Debug Message to see numbers (Remove in production)
-            // player.sendMessage(net.minecraft.text.Text.of("§7Damage Dealt: §c" + (int)finalDamage + (isCrit ? " §l(CRIT!)" : "")), true);
         }
     }
 }
