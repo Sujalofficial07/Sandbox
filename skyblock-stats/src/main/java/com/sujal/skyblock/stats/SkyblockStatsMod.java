@@ -11,5 +11,6 @@ public class SkyblockStatsMod implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("Skyblock Stats Engine Loaded");
+        StatSyncHandler.register();
     }
 }
