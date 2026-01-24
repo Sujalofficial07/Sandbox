@@ -17,6 +17,17 @@ public class SBItemUtils {
         return stack.hasNbt() && stack.getNbt().contains(SB_TAG);
     }
 
+    // --- MISSING METHOD RESTORED ---
+    public static void setString(ItemStack stack, String key, String value) {
+        getSBData(stack).putString(key, value);
+    }
+
+    public static String getString(ItemStack stack, String key) {
+        if (!isSkyblockItem(stack)) return "";
+        return getSBData(stack).getString(key);
+    }
+    // --------------------------------
+
     public static void setStat(ItemStack stack, StatType stat, double value) {
         getSBData(stack).putDouble(stat.name(), value);
     }
