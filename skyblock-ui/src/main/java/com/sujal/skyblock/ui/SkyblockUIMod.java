@@ -10,15 +10,23 @@ import net.minecraft.server.command.CommandManager;
 
 public class SkyblockUIMod implements ModInitializer, ClientModInitializer {
     
-    // Server-side Logic
+    // Server-side Logic (Commands)
     @Override
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, env) -> {
-            dispatcher.register(CommandManager.literal("sbmenu")
-                .executes(ctx -> {
-                    ProfileMenu.open(ctx.getSource().getPlayerOrThrow());
-                    return 1;
-                }));
+            // Register /sb menu here because UI module knows about ProfileMenu
+            dispatcher.register(CommandManager.literal("sb")
+                .then(CommandManager.literal("menu")
+                    .executes(ctx -> {
+                        ProfileMenu.open(ctx.getSource().getPlayerOrThrow());
+                        return 1;
+                    }))
+                .then(CommandManager.literal("profile") // Alias for menu
+                    .executes(ctx -> {
+                        ProfileMenu.open(ctx.getSource().getPlayerOrThrow());
+                        return 1;
+                    }))
+            );
         });
     }
 
