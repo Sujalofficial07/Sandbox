@@ -2,8 +2,6 @@ package com.sujal.skyblock.ui.menu;
 
 import com.sujal.skyblock.core.data.ProfileManager;
 import com.sujal.skyblock.core.data.SkyblockProfile;
-import com.sujal.skyblock.economy.BankService;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -35,25 +33,38 @@ public class BankMenu {
 
         // 2. Deposit Item (Gold Block) - Slot 11
         ItemStack deposit = new ItemStack(Items.GOLD_BLOCK);
-        deposit.setCustomName(Text.of("§aDeposit Coins"));
-        setLore(deposit, "§7Current purse: §6" + FORMAT.format(profile.getCoins()), "", "§eLeft-Click to Deposit All", "§eRight-Click to Deposit Half");
+        deposit.setCustomName(Text.literal("§aDeposit Coins"));
+        setLore(deposit, 
+            "§7Current purse: §6" + FORMAT.format(profile.getCoins()), 
+            "", 
+            "§eLeft-Click to Deposit All", 
+            "§eRight-Click to Deposit Half"
+        );
         inv.setStack(11, deposit);
 
         // 3. Info Item (Emerald) - Slot 13
         ItemStack info = new ItemStack(Items.EMERALD);
-        info.setCustomName(Text.of("§aBank Information"));
-        setLore(info, "§7Balance: §6" + FORMAT.format(profile.getBankBalance()), "§7Interest: §e1% per season");
+        info.setCustomName(Text.literal("§aBank Information"));
+        setLore(info, 
+            "§7Balance: §6" + FORMAT.format(profile.getBankBalance()), 
+            "§7Interest: §e1% per season"
+        );
         inv.setStack(13, info);
 
         // 4. Withdraw Item (Dispenser) - Slot 15
         ItemStack withdraw = new ItemStack(Items.DISPENSER);
-        withdraw.setCustomName(Text.of("§aWithdraw Coins"));
-        setLore(withdraw, "§7Bank Balance: §6" + FORMAT.format(profile.getBankBalance()), "", "§eLeft-Click to Withdraw All", "§eRight-Click to Withdraw Half");
+        withdraw.setCustomName(Text.literal("§aWithdraw Coins"));
+        setLore(withdraw, 
+            "§7Bank Balance: §6" + FORMAT.format(profile.getBankBalance()), 
+            "", 
+            "§eLeft-Click to Withdraw All", 
+            "§eRight-Click to Withdraw Half"
+        );
         inv.setStack(15, withdraw);
 
         // 5. Close Button - Slot 22
         ItemStack close = new ItemStack(Items.BARRIER);
-        close.setCustomName(Text.of("§cClose"));
+        close.setCustomName(Text.literal("§cClose"));
         inv.setStack(22, close);
 
         // Open GUI
@@ -63,13 +74,16 @@ public class BankMenu {
         ));
     }
     
+    // --- FIXED LORE LOGIC ---
     private static void setLore(ItemStack stack, String... lines) {
-        NbtCompound tag = stack.getOrCreateNbt();
+        // Use getOrCreateSubNbt to ensure "display" tag exists and is linked
+        NbtCompound display = stack.getOrCreateSubNbt("display");
+        
         NbtList lore = new NbtList();
-        for(String line : lines) lore.add(NbtString.of(line));
-        tag.getCompound("display").put("Lore", lore);
+        for(String line : lines) {
+            lore.add(NbtString.of(line));
+        }
+        
+        display.put("Lore", lore);
     }
-    
-    // Note: To make clicks work, we need to update the MenuClickMixin or Handler
-    // to detect clicks in this specific menu title "Bank".
 }
