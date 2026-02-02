@@ -11,7 +11,10 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -19,28 +22,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ScreenHandler.class)
 public abstract class MenuClickMixin {
 
+    @Unique
+    private static final Logger LOGGER = LoggerFactory.getLogger("SkyblockClick");
+
     @Inject(method = "onSlotClick", at = @At("HEAD"), cancellable = true)
     private void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci) {
-        // 1. Basic Safety Checks
         ScreenHandler handler = (ScreenHandler) (Object) this;
         if (slotIndex < 0 || slotIndex >= handler.slots.size()) return;
-        if (player.getWorld().isClient) return; // Server-side logic only
+        if (player.getWorld().isClient) return; // Server only
 
         Slot slot = handler.slots.get(slotIndex);
-        
-        // Cast to ServerPlayerEntity immediately
-        if (!(player instanceof ServerPlayerEntity)) return;
-        ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+        if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
+
+        // --- DEBUG LOG (Remove later) ---
+        // Uncomment to see what inventory you are clicking in console
+        // LOGGER.info("Clicked Slot: " + slotIndex + " | Inv Size: " + slot.inventory.size());
 
         // -----------------------------------------------------------
-        // LOGIC 1: BANK MENU (Size 27 - SimpleInventory)
+        // BANK MENU (Size 27)
         // -----------------------------------------------------------
         if (slot.inventory instanceof net.minecraft.inventory.SimpleInventory && slot.inventory.size() == 27) {
-            // Cancel ALL clicks in top inventory to prevent taking items
+            // Prevent taking items from top inventory
             if (slot.inventory != player.getInventory()) {
-                ci.cancel(); 
+                ci.cancel(); // Stop item pickup
 
-                // Handle Buttons
+                // Logic
                 ProfileManager pm = ProfileManager.getServerInstance((ServerWorld) player.getWorld());
                 SkyblockProfile profile = pm.getProfile(player);
                 boolean isRightClick = (button == 1);
@@ -49,9 +55,8 @@ public abstract class MenuClickMixin {
                 if (slotIndex == 11) {
                     double amount = isRightClick ? profile.getCoins() / 2 : profile.getCoins();
                     if (amount > 0) {
-                        BankService.deposit(serverPlayer, amount);
-                        // Refresh the menu to update lore
-                        BankMenu.open(serverPlayer);
+                        boolean success = BankService.deposit(serverPlayer, amount);
+                        if(success) BankMenu.open(serverPlayer); // Refresh only on success
                     }
                 }
 
@@ -59,32 +64,26 @@ public abstract class MenuClickMixin {
                 else if (slotIndex == 15) {
                     double amount = isRightClick ? profile.getBankBalance() / 2 : profile.getBankBalance();
                     if (amount > 0) {
-                        BankService.withdraw(serverPlayer, amount);
-                        // Refresh the menu to update lore
-                        BankMenu.open(serverPlayer);
+                        boolean success = BankService.withdraw(serverPlayer, amount);
+                        if(success) BankMenu.open(serverPlayer);
                     }
                 }
 
-                // Slot 22: Close (Barrier)
+                // Slot 22: Close
                 else if (slotIndex == 22) {
-                    // FIX: Use 'serverPlayer' instead of 'player'
                     serverPlayer.closeHandledScreen();
                 }
             }
         }
 
         // -----------------------------------------------------------
-        // LOGIC 2: ITEM MENU / CHEAT MENU (Size 54 - SimpleInventory)
+        // ITEMS MENU (Size 54)
         // -----------------------------------------------------------
         else if (slot.inventory instanceof net.minecraft.inventory.SimpleInventory && slot.inventory.size() == 54) {
-            // Only apply logic if clicking Top Inventory
             if (slot.inventory != player.getInventory()) {
-                // Allow COPYING the item (Give to player)
                 if (slot.hasStack()) {
                     player.getInventory().offerOrDrop(slot.getStack().copy());
                 }
-                
-                // Cancel the actual move event so the item stays in the menu
                 ci.cancel();
             }
         }
