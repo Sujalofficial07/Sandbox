@@ -6,15 +6,15 @@ import com.sujal.skyblock.economy.BankService;
 import com.sujal.skyblock.ui.menu.BankMenu;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,70 +22,92 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ScreenHandler.class)
 public abstract class MenuClickMixin {
 
-    @Unique
-    private static final Logger LOGGER = LoggerFactory.getLogger("SkyblockClick");
-
     @Inject(method = "onSlotClick", at = @At("HEAD"), cancellable = true)
     private void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci) {
         ScreenHandler handler = (ScreenHandler) (Object) this;
         if (slotIndex < 0 || slotIndex >= handler.slots.size()) return;
-        if (player.getWorld().isClient) return; // Server only
+        if (player.getWorld().isClient) return;
 
         Slot slot = handler.slots.get(slotIndex);
         if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
-        // --- DEBUG LOG (Remove later) ---
-        // Uncomment to see what inventory you are clicking in console
-        // LOGGER.info("Clicked Slot: " + slotIndex + " | Inv Size: " + slot.inventory.size());
-
-        // -----------------------------------------------------------
-        // BANK MENU (Size 27)
-        // -----------------------------------------------------------
-        if (slot.inventory instanceof net.minecraft.inventory.SimpleInventory && slot.inventory.size() == 27) {
-            // Prevent taking items from top inventory
+        // Check if it's a 54 Slot Menu (Bank or Items)
+        if (slot.inventory instanceof net.minecraft.inventory.SimpleInventory && slot.inventory.size() == 54) {
+            
+            // Only handle clicks in the GUI (not player inventory)
             if (slot.inventory != player.getInventory()) {
-                ci.cancel(); // Stop item pickup
+                ci.cancel(); // Stop moving items
 
-                // Logic
+                ItemStack clickedItem = slot.getStack();
+                if (clickedItem.isEmpty()) return;
+
+                String itemName = clickedItem.getName().getString();
                 ProfileManager pm = ProfileManager.getServerInstance((ServerWorld) player.getWorld());
                 SkyblockProfile profile = pm.getProfile(player);
-                boolean isRightClick = (button == 1);
 
-                // Slot 11: Deposit (Gold Block)
-                if (slotIndex == 11) {
-                    double amount = isRightClick ? profile.getCoins() / 2 : profile.getCoins();
-                    if (amount > 0) {
-                        boolean success = BankService.deposit(serverPlayer, amount);
-                        if(success) BankMenu.open(serverPlayer); // Refresh only on success
-                    }
+                // --- SOUND EFFECT (Click) ---
+                player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 1f, 1f);
+
+                // --- 1. MAIN BANK MENU ---
+                if (itemName.contains("Deposit Coins")) {
+                    BankMenu.openDeposit(serverPlayer);
                 }
-
-                // Slot 15: Withdraw (Dispenser)
-                else if (slotIndex == 15) {
-                    double amount = isRightClick ? profile.getBankBalance() / 2 : profile.getBankBalance();
-                    if (amount > 0) {
-                        boolean success = BankService.withdraw(serverPlayer, amount);
-                        if(success) BankMenu.open(serverPlayer);
-                    }
+                else if (itemName.contains("Withdraw Coins")) {
+                    BankMenu.openWithdraw(serverPlayer);
                 }
-
-                // Slot 22: Close
-                else if (slotIndex == 22) {
+                else if (itemName.contains("Close")) {
                     serverPlayer.closeHandledScreen();
                 }
-            }
-        }
 
-        // -----------------------------------------------------------
-        // ITEMS MENU (Size 54)
-        // -----------------------------------------------------------
-        else if (slot.inventory instanceof net.minecraft.inventory.SimpleInventory && slot.inventory.size() == 54) {
-            if (slot.inventory != player.getInventory()) {
-                if (slot.hasStack()) {
-                    player.getInventory().offerOrDrop(slot.getStack().copy());
+                // --- 2. DEPOSIT MENU ---
+                else if (itemName.contains("Your whole purse")) {
+                    if (BankService.deposit(serverPlayer, profile.getCoins())) {
+                        playSuccessSound(player);
+                        BankMenu.openMain(serverPlayer); // Return to main
+                    }
                 }
-                ci.cancel();
+                else if (itemName.contains("Half your purse")) {
+                    if (BankService.deposit(serverPlayer, profile.getCoins() / 2)) {
+                        playSuccessSound(player);
+                        BankMenu.openMain(serverPlayer);
+                    }
+                }
+                else if (itemName.contains("Go Back")) {
+                    BankMenu.openMain(serverPlayer);
+                }
+
+                // --- 3. WITHDRAW MENU ---
+                else if (itemName.contains("Everything in the account")) {
+                    if (BankService.withdraw(serverPlayer, profile.getBankBalance())) {
+                        playSuccessSound(player);
+                        BankMenu.openMain(serverPlayer);
+                    }
+                }
+                else if (itemName.contains("Half the account")) {
+                    if (BankService.withdraw(serverPlayer, profile.getBankBalance() / 2)) {
+                        playSuccessSound(player);
+                        BankMenu.openMain(serverPlayer);
+                    }
+                }
+                else if (itemName.contains("20% of the account")) {
+                    if (BankService.withdraw(serverPlayer, profile.getBankBalance() * 0.2)) {
+                        playSuccessSound(player);
+                        BankMenu.openMain(serverPlayer);
+                    }
+                }
+                
+                // --- 4. ITEM MENU (Backup logic for /sbitems) ---
+                // If it's none of the above specific bank names, allow copy
+                // (Optional: You can add a check for "SkyBlock Items" title if needed)
+                else if (clickedItem.hasNbt() && clickedItem.getNbt().contains("SkyBlockData")) {
+                    player.getInventory().offerOrDrop(clickedItem.copy());
+                }
             }
         }
+    }
+
+    private void playSuccessSound(PlayerEntity player) {
+        // Hypixel "Pling" Sound
+        player.playSound(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.MASTER, 1f, 2.0f);
     }
 }
