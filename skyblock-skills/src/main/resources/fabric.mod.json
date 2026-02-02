@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "skyblock-skills",
+  "version": "${version}",
+  "name": "Skyblock Skills",
+  "description": "Hypixel-style Skills & Dungeoneering",
+  "authors": ["Sujal"],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.sujal.skyblock.skills.SkyblockSkillsMod"
+    ]
+  },
+  "mixins": [
+    "skyblock-skills.mixins.json"
+  ],
+  "depends": {
+    "skyblock-core": "*",
+    "skyblock-stats": "*",
+    "fabric-api": "*"
+  }
+}
