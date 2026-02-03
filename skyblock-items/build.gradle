@@ -1,4 +1,0 @@
-dependencies {
-    implementation project(":skyblock-core")
-    implementation project(":skyblock-stats")
-}
