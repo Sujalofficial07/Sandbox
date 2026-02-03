@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.sujal.skyblock.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MixinPlayerEntity",
+    "MixinLivingEntity",
+    "MixinInGameHud"
+  ],
+  "client": [
+    "client.MixinInGameHud"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
