@@ -1,4 +1,0 @@
-dependencies {
-    implementation project(":skyblock-core")
-    // Note: Do NOT include skyblock-ui here to avoid loops
-}
