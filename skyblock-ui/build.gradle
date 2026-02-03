@@ -1,6 +1,0 @@
-dependencies {
-    implementation project(":skyblock-core")
-    implementation project(":skyblock-stats")
-    implementation project(":skyblock-economy") // Added Economy dependency
-    implementation project(":skyblock-items")
-}
