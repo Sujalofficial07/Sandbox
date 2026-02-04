@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.sujal.skyblock.core.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "PlayerEntityMixin",
+    "ServerPlayerEntityMixin",
+    "LivingEntityMixin",
+    "ItemStackMixin",
+    "BlockMixin",
+    "MinecraftServerMixin",
+    "ServerWorldMixin"
+  ],
+  "client": [
+    "InGameHudMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
