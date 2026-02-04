@@ -1,0 +1,73 @@
+# Gradle
+.gradle/
+build/
+out/
+bin/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+.vscode/
+
+# Fabric
+run/
+.fabric/
+remappedSrc/
+
+# Minecraft
+logs/
+crash-reports/
+saves/
+screenshots/
+resourcepacks/
+shaderpacks/
+options.txt
+optionsof.txt
+usercache.json
+usernamecache.json
+
+# SkyBlock Data
+skyblock-data/
+config/
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Exclude gradle wrapper jar
+!gradle/wrapper/gradle-wrapper.jar
