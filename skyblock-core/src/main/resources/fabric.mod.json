@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "skyblock-core",
+  "version": "1.0.0",
+  "name": "SkyBlock Core",
+  "description": "Core module for Hypixel SkyBlock offline recreation",
+  "authors": [
+    "Sujal"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/skyblock-core/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.sujal.skyblock.core.SkyBlockCore"
+    ]
+  },
+  "mixins": [
+    "skyblock-core.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
