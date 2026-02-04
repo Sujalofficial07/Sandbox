@@ -2,8 +2,9 @@ package com.sujal.skyblock.core.mixin;
 
 import com.sujal.skyblock.core.api.util.NBTUtils;
 import com.sujal.skyblock.core.api.util.TextUtils;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +22,7 @@ public abstract class ItemStackMixin {
     public abstract NbtCompound getOrCreateNbt();
     
     @Inject(method = "getTooltip", at = @At("RETURN"))
-    private void onGetTooltip(TooltipType context, CallbackInfoReturnable<List<Text>> cir) {
+    private void onGetTooltip(PlayerEntity player, TooltipContext context, CallbackInfoReturnable<List<Text>> cir) {
         ItemStack stack = (ItemStack) (Object) this;
         NbtCompound nbt = stack.getOrCreateNbt();
         
