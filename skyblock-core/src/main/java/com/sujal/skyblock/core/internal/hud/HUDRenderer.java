@@ -57,8 +57,9 @@ public class HUDRenderer {
     }
     
     public List<Text> buildScoreboardLines(ServerPlayerEntity player) {
-        List<Text> lines = new ArrayList<>();
-        
+    List<Text> lines = new ArrayList<>();
+    
+    try {
         Optional<SkyBlockProfile> profileOpt = SkyBlockProfileAPI.getProfile(player);
         Optional<SkyBlockStats> statsOpt = SkyBlockStatsAPI.getStats(player);
         
@@ -70,7 +71,7 @@ public class HUDRenderer {
         SkyBlockStats stats = statsOpt.get();
         
         lines.add(TextUtils.parseColorCodes("&6&lSKYBLOCK"));
-        lines.add(Text.empty());
+        lines.add(Text.literal(""));
         
         Optional<Zone> zoneOpt = SkyBlockZoneAPI.getPlayerZone(player);
         if (zoneOpt.isPresent()) {
@@ -79,26 +80,30 @@ public class HUDRenderer {
             lines.add(TextUtils.parseColorCodes("&7Unknown"));
         }
         
-        lines.add(Text.empty());
+        lines.add(Text.literal(""));
         
         lines.add(TextUtils.parseColorCodes("&aProfile: &7" + profile.getProfileName()));
-        lines.add(Text.empty());
+        lines.add(Text.literal(""));
         
         lines.add(TextUtils.parseColorCodes("&6Purse: &7" + TextUtils.formatNumber(profile.getCoins()) + " coins"));
         lines.add(TextUtils.parseColorCodes("&6Bank: &7" + TextUtils.formatNumber(profile.getBankCoins()) + " coins"));
-        lines.add(Text.empty());
+        lines.add(Text.literal(""));
         
         lines.add(TextUtils.parseColorCodes("&cHealth: &7" + 
             String.format("%.0f/%.0f", stats.getHealth(), stats.getMaxHealth()) + " ❤"));
         lines.add(TextUtils.parseColorCodes("&bMana: &7" + 
             String.format("%.0f/%.0f", stats.getMana(), stats.getMaxMana()) + " ✎"));
-        lines.add(Text.empty());
+        lines.add(Text.literal(""));
         
         lines.add(TextUtils.parseColorCodes("&7SkyBlock Level: &b" + profile.getSkyBlockLevel()));
-        lines.add(Text.empty());
+        lines.add(Text.literal(""));
         
         lines.add(TextUtils.parseColorCodes("&ewww.hypixel.net"));
-        
-        return lines;
+    } catch (Exception e) {
+        lines.clear();
+        lines.add(Text.literal("Error loading scoreboard"));
     }
-          }
+    
+    return lines;
+    }
+}
