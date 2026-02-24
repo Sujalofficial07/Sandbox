@@ -27,9 +27,7 @@ public class ScoreboardRenderer {
                 objectiveName,
                 ScoreboardCriterion.DUMMY,
                 Text.literal("SKYBLOCK"),
-                ScoreboardCriterion.RenderType.INTEGER,
-                true,
-                null
+                ScoreboardCriterion.RenderType.INTEGER
             );
         }
         
@@ -43,29 +41,30 @@ public class ScoreboardRenderer {
         
         clear();
         
-        List<Text> lines = player.getServer() != null ? 
-            player.getServer().execute(() -> {
-                var core = com.sujal.skyblock.core.SkyBlockCore.getInstance();
-                if (core != null && core.getHudRenderer() != null) {
-                    return core.getHudRenderer().buildScoreboardLines(player);
-                }
-                return List.<Text>of();
-            }).join() : List.of();
+        var core = com.sujal.skyblock.core.SkyBlockCore.getInstance();
+        if (core == null || core.getHudRenderer() == null) {
+            return;
+        }
+        
+        List<Text> lines = core.getHudRenderer().buildScoreboardLines(player);
         
         int score = lines.size();
         for (Text line : lines) {
-            ScoreboardScore scoreboardScore = scoreboard.getOrCreateScore(
-                ScoreHolder.fromName(line.getString().substring(0, Math.min(40, line.getString().length()))),
-                objective
-            );
+            String playerName = line.getString();
+            if (playerName.length() > 40) {
+                playerName = playerName.substring(0, 40);
+            }
+            
+            ScoreboardPlayerScore scoreboardScore = scoreboard.getPlayerScore(playerName, objective);
             scoreboardScore.setScore(score--);
         }
     }
     
     public void clear() {
         if (objective != null) {
-            scoreboard.getScoreHolderObjectives(objective)
-                .forEach(scoreboard::removeScore);
+            for (String playerName : scoreboard.getKnownPlayers()) {
+                scoreboard.resetPlayerScore(playerName, objective);
+            }
         }
     }
 }
