@@ -31,7 +31,7 @@ public class ScoreboardRenderer {
             );
         }
         
-        scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, objective);
+        scoreboard.setObjectiveSlot(1, objective);
     }
     
     public void update() {
